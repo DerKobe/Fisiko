@@ -1,0 +1,160 @@
+// Static game data: continents, territories, adjacency, and how real-world
+// countries are grouped into the 42 classic territories.
+
+export const CONTINENTS = [
+  { id: 'northAmerica', bonus: 5, color: '#d6a13c', name: { en: 'North America', de: 'Nordamerika' } },
+  { id: 'southAmerica', bonus: 2, color: '#c65a3c', name: { en: 'South America', de: 'Südamerika' } },
+  { id: 'europe', bonus: 5, color: '#5c80b8', name: { en: 'Europe', de: 'Europa' } },
+  { id: 'africa', bonus: 3, color: '#b0793c', name: { en: 'Africa', de: 'Afrika' } },
+  { id: 'asia', bonus: 7, color: '#6e9c4c', name: { en: 'Asia', de: 'Asien' } },
+  { id: 'australia', bonus: 2, color: '#9a68a8', name: { en: 'Australia', de: 'Australien' } },
+];
+
+// seeds: [lon, lat] points used to split countries shared by several territories
+// (nearest seed wins) and to discard far-away islands.
+export const TERRITORIES = [
+  // North America
+  { id: 'alaska', c: 'northAmerica', name: { en: 'Alaska', de: 'Alaska' }, seeds: [[-152, 64]] },
+  { id: 'northwestTerritory', c: 'northAmerica', name: { en: 'Northwest Territory', de: 'Nordwest-Territorium' }, seeds: [[-118, 64], [-100, 68], [-100, 76]] },
+  { id: 'greenland', c: 'northAmerica', name: { en: 'Greenland', de: 'Grönland' }, seeds: [[-40, 72]] },
+  { id: 'alberta', c: 'northAmerica', name: { en: 'Alberta', de: 'Alberta' }, seeds: [[-116, 55]] },
+  { id: 'ontario', c: 'northAmerica', name: { en: 'Ontario', de: 'Ontario' }, seeds: [[-88, 51]] },
+  { id: 'quebec', c: 'northAmerica', name: { en: 'Quebec', de: 'Quebec' }, seeds: [[-70, 52]] },
+  { id: 'westernUS', c: 'northAmerica', name: { en: 'Western United States', de: 'Weststaaten' }, seeds: [[-114, 41]] },
+  { id: 'easternUS', c: 'northAmerica', name: { en: 'Eastern United States', de: 'Oststaaten' }, seeds: [[-86, 37]] },
+  { id: 'centralAmerica', c: 'northAmerica', name: { en: 'Central America', de: 'Mittelamerika' }, seeds: [[-100, 22]] },
+  // South America
+  { id: 'venezuela', c: 'southAmerica', name: { en: 'Venezuela', de: 'Venezuela' }, seeds: [[-66, 6]] },
+  { id: 'peru', c: 'southAmerica', name: { en: 'Peru', de: 'Peru' }, seeds: [[-72, -11]] },
+  { id: 'brazil', c: 'southAmerica', name: { en: 'Brazil', de: 'Brasilien' }, seeds: [[-50, -10]] },
+  { id: 'argentina', c: 'southAmerica', name: { en: 'Argentina', de: 'Argentinien' }, seeds: [[-65, -36]] },
+  // Europe
+  { id: 'iceland', c: 'europe', name: { en: 'Iceland', de: 'Island' }, seeds: [[-19, 65]] },
+  { id: 'greatBritain', c: 'europe', name: { en: 'Great Britain', de: 'Großbritannien' }, seeds: [[-3, 54]] },
+  { id: 'scandinavia', c: 'europe', name: { en: 'Scandinavia', de: 'Skandinavien' }, seeds: [[16, 63]] },
+  { id: 'northernEurope', c: 'europe', name: { en: 'Northern Europe', de: 'Mitteleuropa' }, seeds: [[15, 52]] },
+  { id: 'westernEurope', c: 'europe', name: { en: 'Western Europe', de: 'Westeuropa' }, seeds: [[0, 44]] },
+  { id: 'southernEurope', c: 'europe', name: { en: 'Southern Europe', de: 'Südeuropa' }, seeds: [[20, 43]] },
+  { id: 'ukraine', c: 'europe', name: { en: 'Ukraine', de: 'Ukraine' }, seeds: [[33, 52], [40, 58], [38, 66]] },
+  // Africa
+  { id: 'northAfrica', c: 'africa', name: { en: 'North Africa', de: 'Nordafrika' }, seeds: [[2, 20]] },
+  { id: 'egypt', c: 'africa', name: { en: 'Egypt', de: 'Ägypten' }, seeds: [[30, 26]] },
+  { id: 'eastAfrica', c: 'africa', name: { en: 'East Africa', de: 'Ostafrika' }, seeds: [[38, 4]] },
+  { id: 'congo', c: 'africa', name: { en: 'Congo', de: 'Kongo' }, seeds: [[20, -3]] },
+  { id: 'southAfrica', c: 'africa', name: { en: 'South Africa', de: 'Südafrika' }, seeds: [[25, -24]] },
+  { id: 'madagascar', c: 'africa', name: { en: 'Madagascar', de: 'Madagaskar' }, seeds: [[46.5, -19.5]] },
+  // Asia
+  { id: 'ural', c: 'asia', name: { en: 'Ural', de: 'Ural' }, seeds: [[62, 60], [66, 67], [76, 53]] },
+  { id: 'siberia', c: 'asia', name: { en: 'Siberia', de: 'Sibirien' }, seeds: [[88, 62], [95, 72], [90, 52]] },
+  { id: 'yakutsk', c: 'asia', name: { en: 'Yakutsk', de: 'Jakutien' }, seeds: [[124, 64], [130, 70]] },
+  { id: 'kamchatka', c: 'asia', name: { en: 'Kamchatka', de: 'Kamtschatka' }, seeds: [[160, 62], [172, 66], [134, 52], [145, 58]] },
+  { id: 'irkutsk', c: 'asia', name: { en: 'Irkutsk', de: 'Irkutsk' }, seeds: [[106, 56]] },
+  { id: 'mongolia', c: 'asia', name: { en: 'Mongolia', de: 'Mongolei' }, seeds: [[103, 47], [126, 46]] },
+  { id: 'japan', c: 'asia', name: { en: 'Japan', de: 'Japan' }, seeds: [[138, 37]] },
+  { id: 'afghanistan', c: 'asia', name: { en: 'Afghanistan', de: 'Afghanistan' }, seeds: [[66, 40], [70, 46]] },
+  { id: 'china', c: 'asia', name: { en: 'China', de: 'China' }, seeds: [[103, 33], [114, 32], [85, 38]] },
+  { id: 'middleEast', c: 'asia', name: { en: 'Middle East', de: 'Mittlerer Osten' }, seeds: [[44, 30]] },
+  { id: 'india', c: 'asia', name: { en: 'India', de: 'Indien' }, seeds: [[78, 22]] },
+  { id: 'siam', c: 'asia', name: { en: 'Siam', de: 'Siam' }, seeds: [[101, 15], [102, 4]] },
+  // Australia
+  { id: 'indonesia', c: 'australia', name: { en: 'Indonesia', de: 'Indonesien' }, seeds: [[113, -1], [121, -3]] },
+  { id: 'newGuinea', c: 'australia', name: { en: 'New Guinea', de: 'Neuguinea' }, seeds: [[141, -5]] },
+  { id: 'westernAustralia', c: 'australia', name: { en: 'Western Australia', de: 'Westaustralien' }, seeds: [[122, -25]] },
+  { id: 'easternAustralia', c: 'australia', name: { en: 'Eastern Australia', de: 'Ostaustralien' }, seeds: [[145, -27]] },
+];
+
+export const ADJACENCY = {
+  alaska: ['northwestTerritory', 'alberta', 'kamchatka'],
+  northwestTerritory: ['alaska', 'alberta', 'ontario', 'greenland'],
+  greenland: ['northwestTerritory', 'ontario', 'quebec', 'iceland'],
+  alberta: ['alaska', 'northwestTerritory', 'ontario', 'westernUS'],
+  ontario: ['northwestTerritory', 'alberta', 'westernUS', 'easternUS', 'quebec', 'greenland'],
+  quebec: ['ontario', 'easternUS', 'greenland'],
+  westernUS: ['alberta', 'ontario', 'easternUS', 'centralAmerica'],
+  easternUS: ['westernUS', 'ontario', 'quebec', 'centralAmerica'],
+  centralAmerica: ['westernUS', 'easternUS', 'venezuela'],
+  venezuela: ['centralAmerica', 'peru', 'brazil'],
+  peru: ['venezuela', 'brazil', 'argentina'],
+  brazil: ['venezuela', 'peru', 'argentina', 'northAfrica'],
+  argentina: ['peru', 'brazil'],
+  iceland: ['greenland', 'greatBritain', 'scandinavia'],
+  greatBritain: ['iceland', 'scandinavia', 'northernEurope', 'westernEurope'],
+  scandinavia: ['iceland', 'greatBritain', 'northernEurope', 'ukraine'],
+  northernEurope: ['greatBritain', 'scandinavia', 'ukraine', 'southernEurope', 'westernEurope'],
+  westernEurope: ['greatBritain', 'northernEurope', 'southernEurope', 'northAfrica'],
+  southernEurope: ['westernEurope', 'northernEurope', 'ukraine', 'middleEast', 'egypt', 'northAfrica'],
+  ukraine: ['scandinavia', 'northernEurope', 'southernEurope', 'middleEast', 'afghanistan', 'ural'],
+  northAfrica: ['brazil', 'westernEurope', 'southernEurope', 'egypt', 'eastAfrica', 'congo'],
+  egypt: ['northAfrica', 'southernEurope', 'middleEast', 'eastAfrica'],
+  eastAfrica: ['egypt', 'northAfrica', 'congo', 'southAfrica', 'madagascar', 'middleEast'],
+  congo: ['northAfrica', 'eastAfrica', 'southAfrica'],
+  southAfrica: ['congo', 'eastAfrica', 'madagascar'],
+  madagascar: ['southAfrica', 'eastAfrica'],
+  ural: ['ukraine', 'siberia', 'china', 'afghanistan'],
+  siberia: ['ural', 'yakutsk', 'irkutsk', 'mongolia', 'china'],
+  yakutsk: ['siberia', 'kamchatka', 'irkutsk'],
+  kamchatka: ['yakutsk', 'irkutsk', 'mongolia', 'japan', 'alaska'],
+  irkutsk: ['siberia', 'yakutsk', 'kamchatka', 'mongolia'],
+  mongolia: ['irkutsk', 'siberia', 'kamchatka', 'japan', 'china'],
+  japan: ['kamchatka', 'mongolia'],
+  afghanistan: ['ukraine', 'ural', 'china', 'india', 'middleEast'],
+  china: ['afghanistan', 'ural', 'siberia', 'mongolia', 'siam', 'india'],
+  middleEast: ['ukraine', 'afghanistan', 'india', 'egypt', 'eastAfrica', 'southernEurope'],
+  india: ['middleEast', 'afghanistan', 'china', 'siam'],
+  siam: ['india', 'china', 'indonesia'],
+  indonesia: ['siam', 'newGuinea', 'westernAustralia'],
+  newGuinea: ['indonesia', 'westernAustralia', 'easternAustralia'],
+  westernAustralia: ['indonesia', 'newGuinea', 'easternAustralia'],
+  easternAustralia: ['westernAustralia', 'newGuinea'],
+};
+
+const group = (t, names) => Object.fromEntries(names.map((n) => [n, [t]]));
+
+// Natural Earth country name -> territory id(s). Unlisted countries become neutral land.
+export const COUNTRY_MAP = {
+  'United States of America': ['alaska', 'westernUS', 'easternUS'],
+  Canada: ['northwestTerritory', 'alberta', 'ontario', 'quebec'],
+  'St. Pierre and Miquelon': ['quebec'],
+  Greenland: ['greenland'],
+  ...group('centralAmerica', ['Mexico', 'Guatemala', 'Belize', 'Honduras', 'El Salvador', 'Nicaragua', 'Costa Rica', 'Panama', 'Cuba', 'Jamaica', 'Haiti', 'Dominican Rep.', 'Bahamas', 'Puerto Rico', 'Cayman Is.', 'Turks and Caicos Is.']),
+  ...group('venezuela', ['Venezuela', 'Colombia', 'Guyana', 'Suriname', 'Trinidad and Tobago', 'Aruba', 'Curaçao']),
+  ...group('peru', ['Peru', 'Ecuador', 'Bolivia']),
+  Brazil: ['brazil'],
+  ...group('argentina', ['Argentina', 'Chile', 'Uruguay', 'Paraguay', 'Falkland Is.']),
+  Iceland: ['iceland'],
+  ...group('greatBritain', ['United Kingdom', 'Ireland', 'Isle of Man', 'Guernsey', 'Jersey']),
+  ...group('scandinavia', ['Norway', 'Sweden', 'Finland', 'Denmark', 'Åland', 'Faeroe Is.']),
+  ...group('northernEurope', ['Germany', 'Poland', 'Netherlands', 'Belgium', 'Luxembourg', 'Czechia', 'Slovakia', 'Austria', 'Switzerland', 'Liechtenstein']),
+  France: ['westernEurope', 'venezuela'],
+  ...group('westernEurope', ['Spain', 'Portugal', 'Andorra', 'Monaco']),
+  ...group('southernEurope', ['Italy', 'San Marino', 'Vatican', 'Malta', 'Slovenia', 'Croatia', 'Bosnia and Herz.', 'Serbia', 'Montenegro', 'Kosovo', 'Albania', 'Macedonia', 'Greece', 'Bulgaria', 'Romania', 'Hungary']),
+  ...group('ukraine', ['Ukraine', 'Belarus', 'Moldova', 'Lithuania', 'Latvia', 'Estonia']),
+  Russia: ['ukraine', 'ural', 'siberia', 'yakutsk', 'kamchatka', 'irkutsk'],
+  Kazakhstan: ['ukraine', 'ural', 'afghanistan'],
+  ...group('northAfrica', ['Morocco', 'W. Sahara', 'Algeria', 'Tunisia', 'Libya', 'Mauritania', 'Mali', 'Niger', 'Chad', 'Senegal', 'Gambia', 'Guinea-Bissau', 'Guinea', 'Sierra Leone', 'Liberia', "Côte d'Ivoire", 'Burkina Faso', 'Ghana', 'Togo', 'Benin', 'Nigeria']),
+  Egypt: ['egypt'],
+  ...group('eastAfrica', ['Sudan', 'S. Sudan', 'Ethiopia', 'Eritrea', 'Djibouti', 'Somalia', 'Somaliland', 'Kenya', 'Uganda', 'Tanzania', 'Rwanda', 'Burundi']),
+  ...group('congo', ['Cameroon', 'Central African Rep.', 'Gabon', 'Congo', 'Dem. Rep. Congo', 'Eq. Guinea', 'Angola', 'São Tomé and Principe']),
+  ...group('southAfrica', ['South Africa', 'Namibia', 'Botswana', 'Zimbabwe', 'Zambia', 'Mozambique', 'Malawi', 'Lesotho', 'eSwatini']),
+  ...group('madagascar', ['Madagascar', 'Mauritius', 'Comoros']),
+  Mongolia: ['mongolia'],
+  Japan: ['japan'],
+  ...group('afghanistan', ['Afghanistan', 'Turkmenistan', 'Uzbekistan', 'Tajikistan', 'Kyrgyzstan']),
+  China: ['china', 'mongolia'],
+  ...group('china', ['Taiwan', 'Hong Kong', 'Macao']),
+  ...group('mongolia', ['North Korea', 'South Korea']),
+  ...group('middleEast', ['Turkey', 'Syria', 'Iraq', 'Iran', 'Saudi Arabia', 'Jordan', 'Israel', 'Palestine', 'Lebanon', 'Kuwait', 'Qatar', 'United Arab Emirates', 'Oman', 'Yemen', 'Bahrain', 'Cyprus', 'N. Cyprus', 'Georgia', 'Armenia', 'Azerbaijan']),
+  ...group('india', ['India', 'Pakistan', 'Nepal', 'Bhutan', 'Bangladesh', 'Sri Lanka', 'Siachen Glacier']),
+  ...group('siam', ['Myanmar', 'Thailand', 'Laos', 'Cambodia', 'Vietnam', 'Singapore']),
+  Malaysia: ['siam', 'indonesia'],
+  Indonesia: ['indonesia', 'newGuinea'],
+  ...group('indonesia', ['Philippines', 'Brunei', 'Timor-Leste']),
+  ...group('newGuinea', ['Papua New Guinea', 'Solomon Is.']),
+  Australia: ['westernAustralia', 'easternAustralia'],
+};
+
+export const TERRITORY_INDEX = Object.fromEntries(TERRITORIES.map((t, i) => [t.id, i]));
+export const CONTINENT_INDEX = Object.fromEntries(CONTINENTS.map((c, i) => [c.id, i]));
+export const NEIGHBORS = TERRITORIES.map((t) => ADJACENCY[t.id].map((id) => TERRITORY_INDEX[id]));
+export const CONTINENT_MEMBERS = CONTINENTS.map((c) => TERRITORIES.map((t, i) => (t.c === c.id ? i : -1)).filter((i) => i >= 0));
+export const TERRITORY_CONTINENT = TERRITORIES.map((t) => CONTINENT_INDEX[t.c]);

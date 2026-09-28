@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>World Conquest</title>
+    <meta name="description" content="A 3D board game of world domination, built with three.js." />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='28' fill='%23c9a24a'/><circle cx='32' cy='32' r='22' fill='%23b3121b'/><text x='32' y='42' font-size='28' text-anchor='middle' fill='%23fff' font-family='serif'>⚔</text></svg>" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800;900&family=IM+Fell+English:ital@0;1&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "/vendor/three/build/three.module.js",
+          "three/addons/": "/vendor/three/examples/jsm/",
+          "cannon-es": "/vendor/cannon-es/cannon-es.js"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="vignette"></div>
+    <div id="slowmo"><div class="bar top"></div><div class="bar bottom"></div></div>
+
+    <!-- Loading -->
+    <div id="loading" class="screen visible">
+      <div class="loading-inner">
+        <div class="crest">⚔</div>
+        <h1 data-i18n="title">World Conquest</h1>
+        <div class="progress"><div class="progress-fill"></div></div>
+        <p class="loading-text" data-i18n="loading"></p>
+      </div>
+    </div>
+
+    <!-- Main menu -->
+    <div id="menu" class="screen">
+      <div class="menu-card">
+        <div class="crest">⚔</div>
+        <h1 data-i18n="title"></h1>
+        <p class="subtitle" data-i18n="subtitle"></p>
+        <div class="menu-buttons">
+          <button class="btn gold big" id="btn-continue" data-i18n="continueGame"></button>
+          <button class="btn gold big" id="btn-new" data-i18n="newGame"></button>
+          <button class="btn" id="btn-rules" data-i18n="howToPlay"></button>
+        </div>
+        <div class="lang-switch">
+          <button data-lang="en">English</button>
+          <button data-lang="de">Deutsch</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- New game setup -->
+    <div id="setup" class="screen">
+      <div class="panel setup-panel">
+        <h2 data-i18n="players"></h2>
+        <div id="player-rows"></div>
+        <button class="btn small" id="btn-add-player" data-i18n="addPlayer"></button>
+        <h2 data-i18n="options"></h2>
+        <label class="check"><input type="checkbox" id="opt-autosetup" checked /> <span data-i18n="autoSetup"></span></label>
+        <label class="check"><input type="checkbox" id="opt-fastai" /> <span data-i18n="fastAi"></span></label>
+        <label class="check"><input type="checkbox" id="opt-aidice" checked /> <span data-i18n="aiDice"></span></label>
+        <div class="setup-actions">
+          <button class="btn" id="btn-setup-back" data-i18n="back"></button>
+          <button class="btn gold big" id="btn-start" data-i18n="start"></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rules -->
+    <div id="rules" class="screen">
+      <div class="panel rules-panel">
+        <h2 data-i18n="howToPlay"></h2>
+        <div class="rules-body" data-i18n-html="rulesHtml"></div>
+        <button class="btn gold" id="btn-rules-back" data-i18n="back"></button>
+      </div>
+    </div>
+
+    <!-- In-game HUD -->
+    <div id="hud" class="hidden">
+      <div id="players"></div>
+      <div id="phasebar">
+        <div class="turn-line"><span id="turn-label"></span> · <span id="current-player"></span></div>
+        <div class="phase-steps">
+          <span data-phase="reinforce" data-i18n="phase.reinforce"></span>
+          <span data-phase="attack" data-i18n="phase.attack"></span>
+          <span data-phase="fortify" data-i18n="phase.fortify"></span>
+        </div>
+      </div>
+      <div id="top-actions">
+        <button class="icon-btn" id="btn-cards" title="Cards">🂠<span class="count" id="card-count">0</span></button>
+        <button class="icon-btn" id="btn-overview" title="Overview">⌖</button>
+        <button class="icon-btn" id="btn-sound" title="Sound">🔊</button>
+        <button class="icon-btn" id="btn-music" title="Music">♫</button>
+        <button class="icon-btn" id="btn-lang" title="Language">DE</button>
+        <button class="icon-btn" id="btn-menu" title="Menu">☰</button>
+      </div>
+
+      <div id="actionbar">
+        <div id="hint"></div>
+        <div id="actions"></div>
+      </div>
+
+      <div id="attack-panel" class="panel floating hidden">
+        <div class="attack-title" id="attack-title"></div>
+        <div class="attack-sides">
+          <div class="side att"><div class="side-name" id="att-name"></div><div class="side-count" id="att-count"></div></div>
+          <div class="vs">⚔</div>
+          <div class="side def"><div class="side-name" id="def-name"></div><div class="side-count" id="def-count"></div></div>
+        </div>
+        <div class="dice-choice">
+          <span data-i18n="attackerDice"></span>
+          <div id="dice-buttons"></div>
+        </div>
+        <button class="btn gold big roll-btn" id="btn-roll"><span class="roll-icon">🎲</span> <span data-i18n="holdToRoll"></span></button>
+        <div class="attack-actions">
+          <button class="btn small" id="btn-quick" data-i18n="quickRoll"></button>
+          <button class="btn small red" id="btn-blitz" data-i18n="blitz"></button>
+          <button class="btn small" id="btn-retreat" data-i18n="retreat"></button>
+        </div>
+      </div>
+
+      <div id="move-panel" class="panel floating hidden">
+        <div class="attack-title" id="move-title"></div>
+        <div class="move-row">
+          <button class="btn small" id="move-minus">−</button>
+          <input type="range" id="move-range" min="1" max="10" value="1" />
+          <button class="btn small" id="move-plus">+</button>
+        </div>
+        <div class="move-value"><span id="move-value">1</span> <span id="move-unit"></span></div>
+        <div class="attack-actions">
+          <button class="btn small" id="move-cancel" data-i18n="cancel"></button>
+          <button class="btn gold" id="move-confirm" data-i18n="confirm"></button>
+        </div>
+      </div>
+
+      <div id="power"><div id="power-fill"></div></div>
+      <div id="log-panel" class="collapsed">
+        <div class="log-head" id="log-toggle"><span data-i18n="log"></span> <span class="chev">▾</span></div>
+        <div id="log"></div>
+      </div>
+      <div id="tooltip" class="hidden"></div>
+    </div>
+
+    <div id="banner"></div>
+    <div id="toasts"></div>
+
+    <!-- Modals -->
+    <div id="cards-modal" class="modal hidden">
+      <div class="panel modal-panel">
+        <h2 data-i18n="cardsTitle"></h2>
+        <p id="cards-hint"></p>
+        <div id="card-list"></div>
+        <div class="modal-actions">
+          <button class="btn" id="cards-close" data-i18n="close"></button>
+          <button class="btn gold" id="cards-trade" data-i18n="tradeCards"></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="handoff" class="modal hidden">
+      <div class="panel modal-panel handoff-panel">
+        <div class="handoff-swatch" id="handoff-swatch"></div>
+        <h2 id="handoff-title"></h2>
+        <button class="btn gold big" id="handoff-ready" data-i18n="ready"></button>
+      </div>
+    </div>
+
+    <div id="pause" class="modal hidden">
+      <div class="panel modal-panel">
+        <h2 data-i18n="menu"></h2>
+        <div class="menu-buttons">
+          <button class="btn gold" id="pause-resume" data-i18n="resume"></button>
+          <button class="btn" id="pause-rules" data-i18n="howToPlay"></button>
+          <label class="check"><input type="checkbox" id="opt-tint" checked /> <span data-i18n="ownerTint"></span></label>
+          <label class="check"><input type="checkbox" id="opt-fastai2" /> <span data-i18n="fastAi"></span></label>
+          <label class="check"><input type="checkbox" id="opt-aidice2" /> <span data-i18n="aiDice"></span></label>
+          <button class="btn" id="pause-menu" data-i18n="mainMenu"></button>
+        </div>
+      </div>
+    </div>
+
+    <div id="gameover" class="modal hidden">
+      <div class="panel modal-panel gameover-panel">
+        <div class="crest big">👑</div>
+        <h2 id="gameover-title"></h2>
+        <p id="gameover-sub"></p>
+        <div class="modal-actions">
+          <button class="btn" id="gameover-menu" data-i18n="mainMenu"></button>
+          <button class="btn gold" id="gameover-again" data-i18n="playAgain"></button>
+        </div>
+      </div>
+    </div>
+    <div id="confetti"></div>
+
+    <script type="module" src="/js/main.js"></script>
+  </body>
+</html>

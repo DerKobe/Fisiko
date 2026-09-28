@@ -1,0 +1,19 @@
+{
+  "name": "world-conquest",
+  "version": "1.0.0",
+  "description": "A 3D strategy board game of world domination, built with three.js and Node.js",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "cannon-es": "^0.20.0",
+    "express": "^5.2.1",
+    "three": "^0.186.1",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2"
+  }
+}

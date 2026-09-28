@@ -1,0 +1,4 @@
+node_modules/
+tools/*.png
+.playwright-mcp/
+.DS_Store
