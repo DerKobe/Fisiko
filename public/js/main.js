@@ -2,6 +2,7 @@
 import { BoardScene } from './board/board3d.js';
 import { paintBoard, computeSeaLanes } from './board/boardArt.js';
 import { ArmyManager } from './pieces/armies.js';
+import { ArrowManager } from './board/arrows.js';
 import { DiceRoller } from './dice/dice.js';
 import { Game } from './game/engine.js';
 import * as AI from './game/ai.js';
@@ -32,6 +33,7 @@ const app = {
 
 let board;
 let armies;
+let arrows;
 let dice;
 let map;
 let baseCanvas;
@@ -108,6 +110,7 @@ async function boot() {
   board.buildBoard(map, boardCanvas);
   armies = new ArmyManager(board);
   armies.init(TERRITORIES.length);
+  arrows = new ArrowManager(board, armies);
   dice = new DiceRoller(board, armies, {
     safeRect: visibleBoardRect,
     onSlowMo: (on) => $('slowmo').classList.toggle('on', on),
@@ -163,6 +166,7 @@ function loop(now) {
   elapsed += dt;
   updateTweens(dt);
   dice.update(dt);
+  arrows.update(dt, elapsed);
   if (app.mode === 'menu' && !board.flying) {
     const theta = Math.sin(elapsed * 0.06) * 0.55;
     const r = 27;
@@ -203,6 +207,7 @@ function showMenu() {
   app.session++;
   app.mode = 'menu';
   dice.cleanupImmediate();
+  arrows.clear();
   $('hud').classList.add('hidden');
   for (const id of ['cards-modal', 'handoff', 'pause', 'gameover']) $(id).classList.add('hidden');
   $('btn-continue').classList.toggle('hidden', !hasSave());
@@ -1124,6 +1129,7 @@ function updateHUD() {
   renderActions();
   renderLog();
   applyHighlights();
+  syncArrows();
 }
 
 function renderActions() {
@@ -1212,8 +1218,24 @@ function renderLog() {
     .join('');
 }
 
+// Attack arrows follow the interaction state: gold arcs to every possible
+// target while choosing, one red arc for the chosen battle until it is over.
+function syncArrows() {
+  if (!app.game || app.mode === 'menu') return arrows.clear();
+  const s = S();
+  const inBattle = s.phase === 'attack' || s.phase === 'occupy';
+  if (app.mode === 'attack-target' && app.sel >= 0 && isHuman(s.current)) {
+    arrows.options(app.sel, game().attackTargets(app.sel));
+  } else if (inBattle && app.sel >= 0 && app.target >= 0 && ['attack-dice', 'occupy', 'ai'].includes(app.mode)) {
+    arrows.lock(app.sel, app.target);
+  } else {
+    arrows.clear();
+  }
+}
+
 function applyHighlights() {
   if (!app.game) return;
+  arrows.setHover(app.hover);
   const s = S();
   const g = game();
   const me = s.current;
