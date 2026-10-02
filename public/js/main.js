@@ -466,11 +466,18 @@ async function startTurnFlow(session) {
 async function finishTurn(session) {
   const s = S();
   const p = s.current;
+  app.mode = 'busy';
+  updateHUD();
   const card = game().endTurn();
   if (card) {
-    sfx.card();
-    toast(t('cardEarned', { p: s.players[p].name }));
+    // Human players see which card they drew; computer hands stay secret.
+    if (isHuman(p)) await revealCard(p, card);
+    else {
+      sfx.card();
+      toast(t('cardEarned', { p: s.players[p].name }));
+    }
   }
+  if (stale(session)) return;
   startTurnFlow(session);
 }
 
@@ -590,7 +597,7 @@ function battleView(from, to) {
   const a = armies.terr[from].group.position;
   const b = armies.terr[to].group.position;
   const mid = a.clone().lerp(b, 0.5);
-  const dist = Math.max(9, Math.min(20, a.distanceTo(b) * 1.5 + 6));
+  const dist = Math.max(13, Math.min(27, a.distanceTo(b) * 1.6 + 9));
   return board.flyTo({ target: mid, dist, polar: 0.66, azimuth: 0 }, 1.0);
 }
 
@@ -879,6 +886,113 @@ function openCards(forced = false) {
   sfx.card();
 }
 
+function cardInner(c) {
+  return `<div class="cname">${c.t >= 0 ? esc(tName(c.t)) : t('wild')}</div><div class="csym">${SYMBOL_GLYPH[c.s]}</div><div class="ctype">${t(SYMBOL_KEY[c.s])}</div>`;
+}
+
+const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
+// End-of-turn card draw: the card flies in face down, flips over, then the
+// player's whole hand is shown; on "Continue" it flies into the cards button.
+async function revealCard(p, card) {
+  const s = S();
+  const hand = s.players[p].cards;
+  const owned = (c) => c.t >= 0 && s.owner[c.t] === p;
+  const overlay = $('card-reveal');
+  const cardEl = $('reveal-card');
+  const front = $('reveal-front');
+  const glow = overlay.querySelector('.reveal-glow');
+  const label = $('reveal-hand-label');
+  const hint = $('reveal-hint');
+  const next = $('reveal-continue');
+  const stage = overlay.querySelector('.reveal-stage');
+  for (const el of [cardEl, stage, glow, label, hint, next]) el.getAnimations().forEach((an) => an.cancel());
+  $('reveal-title').textContent = t('newCard');
+  front.innerHTML = cardInner(card);
+  front.classList.toggle('owned', owned(card));
+  label.textContent = `${t('yourCards')} (${hand.length})`;
+  const set = new Set(game().findSets(p)[0] || []);
+  const handEl = $('reveal-hand');
+  handEl.innerHTML = '';
+  const minis = hand.map((c, i) => {
+    const el = document.createElement('div');
+    el.className = `card${owned(c) ? ' owned' : ''}${set.has(i) ? ' in-set' : ''}${c === card ? ' new' : ''}`;
+    el.dataset.new = t('newBadge');
+    el.innerHTML = cardInner(c);
+    handEl.appendChild(el);
+    return el;
+  });
+  const value = game().tradeValue();
+  const advice = hand.length >= 5 ? t('mustTradeNext', { c: hand.length, n: value }) : set.size ? t('setReady', { n: value }) : t('noSetYet');
+  hint.innerHTML = `${esc(advice)}${hand.some(owned) ? `<span class="sub">${esc(t('ownedHint'))}</span>` : ''}`;
+  overlay.classList.remove('hidden', 'fading');
+
+  const fwd = { fill: 'forwards' };
+  sfx.card();
+  // Fly in from the deck, face down. (Opacity is animated on the stage: opacity
+  // below 1 on the 3D card itself would flatten it and show the mirrored front.)
+  stage.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, ...fwd });
+  await cardEl.animate(
+    [
+      { transform: 'translateY(-75vh) rotateZ(-28deg) rotateY(180deg) scale(0.45)' },
+      { transform: 'translateY(0) rotateZ(0deg) rotateY(180deg) scale(1)' },
+    ],
+    { duration: 650, easing: 'cubic-bezier(.2,.9,.3,1.12)', ...fwd },
+  ).finished;
+  await sleep(250);
+  // Flip to reveal
+  sfx.whoosh();
+  await cardEl.animate(
+    [{ transform: 'rotateY(180deg) scale(1)' }, { transform: 'rotateY(90deg) scale(1.18)', offset: 0.5 }, { transform: 'rotateY(0deg) scale(1)' }],
+    { duration: 700, easing: 'ease-in-out', ...fwd },
+  ).finished;
+  sfx.fanfare();
+  glow.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 500, ...fwd });
+  cardEl.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.07)' }, { transform: 'scale(1)' }], { duration: 450, easing: 'ease-out' });
+  // The whole hand
+  label.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, ...fwd });
+  minis.forEach((el, i) =>
+    el.animate([{ opacity: 0, transform: 'translateY(24px) scale(0.8)' }, { opacity: 1, transform: 'none' }], {
+      duration: 380,
+      delay: 120 + i * 70,
+      easing: 'cubic-bezier(.2,.9,.3,1.2)',
+      ...fwd,
+    }),
+  );
+  hint.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400, delay: 250 + minis.length * 70, ...fwd });
+  next.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 400, delay: 350 + minis.length * 70, ...fwd });
+
+  await new Promise((res) => {
+    const done = () => {
+      next.onclick = null;
+      window.removeEventListener('keydown', onKey);
+      res();
+    };
+    const onKey = (e) => {
+      if (e.key === 'Enter' || e.key === 'Escape') done();
+    };
+    next.onclick = () => {
+      sfx.click();
+      done();
+    };
+    window.addEventListener('keydown', onKey);
+  });
+
+  // Fly into the cards button
+  const from = cardEl.getBoundingClientRect();
+  const to = $('btn-cards').getBoundingClientRect();
+  const dx = to.left + to.width / 2 - (from.left + from.width / 2);
+  const dy = to.top + to.height / 2 - (from.top + from.height / 2);
+  overlay.classList.add('fading');
+  sfx.card();
+  await cardEl.animate(
+    [{ transform: 'translate(0, 0) rotate(0deg) scale(1)' }, { transform: `translate(${dx}px, ${dy}px) rotate(18deg) scale(0.12)` }],
+    { duration: 550, easing: 'cubic-bezier(.5,0,.75,0)', ...fwd },
+  ).finished;
+  overlay.classList.add('hidden');
+  $('btn-cards').animate([{ transform: 'scale(1)' }, { transform: 'scale(1.35)' }, { transform: 'scale(1)' }], { duration: 400, easing: 'ease-out' });
+}
+
 function renderCards() {
   const s = S();
   const viewer = isHuman(s.current) ? s.current : s.players.findIndex((p) => !p.ai);
@@ -889,7 +1003,7 @@ function renderCards() {
   hand.forEach((c, i) => {
     const el = document.createElement('div');
     el.className = `card${cardSel.includes(i) ? ' selected' : ''}${c.t >= 0 && s.owner[c.t] === viewer ? ' owned' : ''}`;
-    el.innerHTML = `<div class="cname">${c.t >= 0 ? esc(tName(c.t)) : t('wild')}</div><div class="csym">${SYMBOL_GLYPH[c.s]}</div><div class="ctype">${t(SYMBOL_KEY[c.s])}</div>`;
+    el.innerHTML = cardInner(c);
     el.onclick = () => {
       if (cardSel.includes(i)) cardSel = cardSel.filter((x) => x !== i);
       else if (cardSel.length < 3) cardSel.push(i);

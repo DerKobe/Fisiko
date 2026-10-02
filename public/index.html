@@ -119,8 +119,8 @@
         <div class="attack-actions">
           <button class="btn small" id="btn-quick" data-i18n="quickRoll"></button>
           <button class="btn small red" id="btn-blitz" data-i18n="blitz"></button>
-          <button class="btn small" id="btn-retreat" data-i18n="retreat"></button>
         </div>
+        <button class="btn small retreat-btn" id="btn-retreat" data-i18n="retreat"></button>
       </div>
 
       <div id="move-panel" class="panel floating hidden">
@@ -159,6 +159,22 @@
           <button class="btn gold" id="cards-trade" data-i18n="tradeCards"></button>
         </div>
       </div>
+    </div>
+
+    <!-- Card drawn at the end of a turn -->
+    <div id="card-reveal" class="hidden">
+      <div class="reveal-title" id="reveal-title"></div>
+      <div class="reveal-stage">
+        <div class="reveal-glow"></div>
+        <div class="reveal-card" id="reveal-card">
+          <div class="face back"></div>
+          <div class="face front card" id="reveal-front"></div>
+        </div>
+      </div>
+      <div class="reveal-hand-label" id="reveal-hand-label"></div>
+      <div class="reveal-hand" id="reveal-hand"></div>
+      <div class="reveal-hint" id="reveal-hint"></div>
+      <button class="btn gold" id="reveal-continue" data-i18n="continue"></button>
     </div>
 
     <div id="handoff" class="modal hidden">
